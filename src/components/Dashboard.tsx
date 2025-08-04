@@ -35,11 +35,7 @@ interface WalkStats {
   weeklyWalks: number;
 }
 
-interface DashboardProps {
-  onNavigate: (page: string) => void;
-}
-
-export default function Dashboard({ onNavigate }: DashboardProps) {
+export default function Dashboard() {
   const { user, signOut } = useAuth();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
@@ -122,28 +118,28 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       description: 'Begin tracking a new walk',
       icon: Play,
       color: 'bg-primary text-primary-foreground',
-      action: () => onNavigate('walk-tracker'),
+      action: () => {},
     },
     {
       title: 'Add Pet',
       description: 'Register a new furry friend',
       icon: Plus,
       color: 'bg-secondary text-secondary-foreground',
-      action: () => onNavigate('pet-profile'),
+      action: () => {},
     },
     {
       title: 'Explore',
       description: 'Find dog-friendly places',
       icon: MapPin,
       color: 'bg-accent text-accent-foreground',
-      action: () => onNavigate('explorer'),
+      action: () => {},
     },
     {
       title: 'Health Check',
       description: 'View health reminders',
       icon: Heart,
       color: 'bg-destructive text-destructive-foreground',
-      action: () => onNavigate('health'),
+      action: () => {},
     },
   ];
 
@@ -152,31 +148,31 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       title: 'Milestones',
       description: 'View your achievements',
       icon: Trophy,
-      action: () => onNavigate('milestones'),
+      action: () => {},
     },
     {
       title: 'Training Hub',
       description: 'Learn new tricks',
       icon: BookOpen,
-      action: () => onNavigate('training'),
+      action: () => {},
     },
     {
       title: 'Rewards',
       description: 'Unlock exclusive offers',
       icon: Gift,
-      action: () => onNavigate('rewards'),
+      action: () => {},
     },
     {
       title: 'AI Assistant',
       description: 'Ask dog care questions',
       icon: MessageCircle,
-      action: () => onNavigate('ai-bot'),
+      action: () => {},
     },
     {
       title: 'Leaderboard',
       description: 'See community rankings',
       icon: Users,
-      action: () => onNavigate('leaderboard'),
+      action: () => {},
     },
   ];
 
@@ -363,7 +359,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
               <p className="text-muted-foreground mb-6">
                 Start your journey by adding your first pet profile
               </p>
-              <Button onClick={() => onNavigate('pet-profile')} className="gap-2">
+              <Button onClick={() => {}} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Add Your First Pet
               </Button>

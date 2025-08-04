@@ -44,11 +44,7 @@ interface WalkStats {
   monthlyWalks: number;
 }
 
-interface MilestonesProps {
-  onBack: () => void;
-}
-
-export default function Milestones({ onBack }: MilestonesProps) {
+export default function Milestones() {
   const { user } = useAuth();
   const [walkStats, setWalkStats] = useState<WalkStats>({
     totalWalks: 0,
@@ -308,9 +304,6 @@ export default function Milestones({ onBack }: MilestonesProps) {
       <div className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
             <h1 className="text-2xl font-bold text-foreground">Milestones & Achievements</h1>
             <Badge variant="secondary" className="ml-auto">
               {unlockedAchievements.length}/{achievements.length} Unlocked
@@ -479,7 +472,7 @@ export default function Milestones({ onBack }: MilestonesProps) {
               <p className="text-muted-foreground mb-6">
                 Take your first walk to start earning achievements and unlocking milestones!
               </p>
-              <Button onClick={onBack} variant="outline">
+              <Button variant="outline">
                 Start Walking
               </Button>
             </CardContent>

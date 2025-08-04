@@ -38,11 +38,7 @@ interface Pet {
   created_at: string;
 }
 
-interface PetProfileProps {
-  onBack: () => void;
-}
-
-export default function PetProfile({ onBack }: PetProfileProps) {
+export default function PetProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [pets, setPets] = useState<Pet[]>([]);
@@ -202,9 +198,6 @@ export default function PetProfile({ onBack }: PetProfileProps) {
       <div className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
             <h1 className="text-2xl font-bold text-foreground">Pet Profiles</h1>
           </div>
         </div>

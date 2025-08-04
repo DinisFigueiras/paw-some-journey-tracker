@@ -43,11 +43,7 @@ interface HealthRecord {
   reminder_days: number;
 }
 
-interface HealthTrackerProps {
-  onBack: () => void;
-}
-
-export default function HealthTracker({ onBack }: HealthTrackerProps) {
+export default function HealthTracker() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [pets, setPets] = useState<Pet[]>([]);
@@ -247,9 +243,6 @@ export default function HealthTracker({ onBack }: HealthTrackerProps) {
       <div className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
             <h1 className="text-2xl font-bold text-foreground">Health Tracker</h1>
             {overdueRecords.length > 0 && (
               <Badge variant="destructive" className="ml-auto">
@@ -501,7 +494,7 @@ export default function HealthTracker({ onBack }: HealthTrackerProps) {
               <p className="text-muted-foreground mb-6">
                 Add a pet profile first to start tracking their health
               </p>
-              <Button onClick={onBack} variant="outline">
+              <Button variant="outline">
                 Go to Pet Profiles
               </Button>
             </CardContent>
