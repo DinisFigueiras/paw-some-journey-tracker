@@ -11,6 +11,7 @@ import TrainingHub from '@/components/TrainingHub';
 import Rewards from '@/components/Rewards';
 import AIBot from '@/components/AIBot';
 import Leaderboard from '@/components/Leaderboard';
+import Community from '@/components/Community';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -28,7 +29,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import pawgoMascot from '@/assets/pawgo-mascot.png';
+import pawgoLogo from '@/assets/pawgo-logo.png';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -36,16 +37,16 @@ const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'profile', label: 'Pet Profile', icon: User },
-    { id: 'walks', label: 'Walk Tracker', icon: MapPin },
-    { id: 'health', label: 'Health Tracker', icon: Heart },
-    { id: 'milestones', label: 'Milestones', icon: Trophy },
-    { id: 'explorer', label: 'Explorer', icon: Compass },
-    { id: 'training', label: 'Training Hub', icon: GraduationCap },
+    { id: 'dashboard', label: 'Home', icon: Home },
+    { id: 'walks', label: 'Walks', icon: MapPin },
+    { id: 'profile', label: 'My Pets', icon: User },
+    { id: 'explorer', label: 'Explore', icon: Compass },
+    { id: 'community', label: 'Community', icon: BarChart3 },
+    { id: 'training', label: 'Training', icon: GraduationCap },
+    { id: 'health', label: 'Health', icon: Heart },
     { id: 'rewards', label: 'Rewards', icon: Gift },
-    { id: 'ai', label: 'AI Assistant', icon: Bot },
-    { id: 'leaderboard', label: 'Leaderboard', icon: BarChart3 }
+    { id: 'ai', label: 'AI Coach', icon: Bot, isPremium: true },
+    { id: 'milestones', label: 'Milestones', icon: Trophy }
   ];
 
   const renderContent = () => {
@@ -59,6 +60,7 @@ const Index = () => {
       case 'training': return <TrainingHub />;
       case 'rewards': return <Rewards />;
       case 'ai': return <AIBot />;
+      case 'community': return <Community />;
       case 'leaderboard': return <Leaderboard />;
       default: return <Dashboard />;
     }
@@ -68,7 +70,7 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <img src={pawgoMascot} alt="Loading" className="w-16 h-16 mx-auto animate-pulse" />
+          <img src={pawgoLogo} alt="Loading" className="w-16 h-16 mx-auto animate-pulse" />
           <p className="text-muted-foreground">Loading PawGo...</p>
         </div>
       </div>
@@ -80,90 +82,35 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-3">
-              <img src={pawgoMascot} alt="PawGo" className="w-8 h-8" />
-              <h1 className="text-xl font-bold text-primary">PawGo</h1>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+      {/* Content */}
+      <div className="flex-1 overflow-auto">
+        {renderContent()}
+      </div>
 
-          {/* Navigation */}
-          <div className="flex-1 p-4 space-y-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.id}
-                  variant={currentView === item.id ? 'default' : 'ghost'}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    setCurrentView(item.id);
-                    setSidebarOpen(false);
-                  }}
-                >
-                  <Icon className="w-4 h-4 mr-3" />
-                  {item.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          {/* User Section */}
-          <div className="p-4 border-t">
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">
-                Signed in as {user.email}
-              </div>
+      {/* Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-amber-200 p-2">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          {navigationItems.slice(0, 5).map((item) => {
+            const Icon = item.icon;
+            const isActive = currentView === item.id;
+            return (
               <Button
-                variant="outline"
+                key={item.id}
+                variant="ghost"
                 size="sm"
-                className="w-full"
-                onClick={signOut}
+                className={`flex flex-col items-center space-y-1 h-auto py-2 px-2 ${
+                  isActive ? 'text-amber-600' : 'text-gray-600'
+                }`}
+                onClick={() => setCurrentView(item.id)}
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
+                <Icon className={`w-5 h-5 ${isActive ? 'text-amber-600' : 'text-gray-400'}`} />
+                <span className="text-xs font-medium">{item.label}</span>
               </Button>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile Header */}
-        <div className="lg:hidden bg-card border-b p-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
-          <div className="flex items-center gap-2">
-            <img src={pawgoMascot} alt="PawGo" className="w-6 h-6" />
-            <h1 className="text-lg font-bold text-primary">PawGo</h1>
-          </div>
-          <div className="w-8" /> {/* Spacer */}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-auto">
-          {renderContent()}
-        </div>
-      </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 };
