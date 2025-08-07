@@ -2,286 +2,240 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Send, Bot, User, Heart, Lightbulb, HelpCircle, Zap } from 'lucide-react';
-
-interface Message {
-  id: number;
-  type: 'user' | 'bot';
-  content: string;
-  timestamp: Date;
-  category?: string;
-}
+import { 
+  Bot, 
+  Crown, 
+  Send, 
+  Sparkles, 
+  MessageCircle, 
+  Heart,
+  Calendar,
+  Stethoscope,
+  PawPrint,
+  Lock,
+  Zap
+} from 'lucide-react';
 
 const AIBot = () => {
-  const [messages, setMessages] = useState<Message[]>([
+  const [isPremium] = useState(false); // This would come from user context
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Array<{
+    id: number;
+    type: 'bot' | 'user';
+    content: string;
+    timestamp: Date;
+    isPremiumRequired?: boolean;
+  }>>([
     {
       id: 1,
-      type: 'bot',
-      content: 'Hi there! I\'m PawPal, your AI dog care assistant. I can help you with training tips, health advice, behavior guidance, and answer any questions about your furry friend! What would you like to know?',
-      timestamp: new Date(),
-      category: 'greeting'
+      type: 'bot' as const,
+      content: "Hi! I'm PawGo's AI Pet Coach! 🐕 I can help with training tips, health advice, and behavior questions. What would you like to know about your furry friend?",
+      timestamp: new Date()
     }
   ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
 
-  const quickQuestions = [
-    { text: 'How often should I walk my dog?', category: 'exercise' },
-    { text: 'My dog is pulling on the leash', category: 'training' },
-    { text: 'Best training treats for puppies?', category: 'nutrition' },
-    { text: 'How to stop excessive barking?', category: 'behavior' },
-    { text: 'Signs of a healthy dog', category: 'health' },
-    { text: 'Puppy potty training tips', category: 'training' }
+  const premiumFeatures = [
+    {
+      icon: Stethoscope,
+      title: "Health Monitoring",
+      description: "AI-powered health assessments and early warning alerts"
+    },
+    {
+      icon: Calendar,
+      title: "Training Schedule",
+      description: "Personalized training plans based on your dog's breed and age"
+    },
+    {
+      icon: Heart,
+      title: "Behavior Analysis",
+      description: "Deep insights into your dog's behavior patterns and mood"
+    },
+    {
+      icon: PawPrint,
+      title: "Breed Expertise",
+      description: "Specialized advice tailored to your dog's specific breed"
+    }
   ];
 
-  const botResponses = {
-    'walk': 'Most dogs need at least 30 minutes to 2 hours of exercise daily, depending on their breed, age, and energy level. Active breeds like Border Collies need more exercise, while smaller or older dogs may need less. Regular walks help maintain physical health and mental stimulation!',
-    'leash': 'Leash pulling is common! Try these tips: 1) Stop moving when they pull, 2) Use positive reinforcement when they walk beside you, 3) Keep treats handy for rewards, 4) Consider a front-clip harness. Consistency is key - it may take a few weeks to see improvement.',
-    'treats': 'For puppies, look for small, soft treats that are easy to chew and digest. Good options include freeze-dried liver, small training treats, or even small pieces of cooked chicken. Avoid treats with artificial colors or excessive salt. The treat should be small enough to eat quickly during training.',
-    'bark': 'Excessive barking can be managed through: 1) Identifying the trigger (boredom, anxiety, territorial), 2) Providing mental stimulation with puzzle toys, 3) Teaching the "quiet" command, 4) Ensuring adequate exercise. If barking persists, consider consulting a professional trainer.',
-    'health': 'Signs of a healthy dog include: clear, bright eyes; clean ears without odor; healthy appetite; regular bathroom habits; good energy levels; shiny coat; pink gums; and normal body temperature (101-102.5°F). Regular vet checkups are essential for preventive care!',
-    'potty': 'Puppy potty training tips: 1) Take them out frequently (every 2-3 hours), 2) Always go out after meals, naps, and play, 3) Praise and treat immediately after they go outside, 4) Clean accidents thoroughly with enzyme cleaner, 5) Be patient - it takes 4-6 months on average!'
-  };
+  const sampleQuestions = [
+    "Why does my dog bark at strangers?",
+    "How often should I feed my puppy?",
+    "What's the best way to house train?",
+    "My dog seems anxious, what can I do?"
+  ];
 
-  const simulateBotResponse = (userMessage: string) => {
-    setIsTyping(true);
+  const handleSend = () => {
+    if (!message.trim()) return;
     
-    setTimeout(() => {
-      let response = "I'd be happy to help with that! While I don't have specific information about that topic in my current knowledge base, I recommend consulting with your veterinarian or a certified dog trainer for personalized advice. Is there anything else I can help you with?";
-      
-      // Simple keyword matching for demo purposes
-      const lowerMessage = userMessage.toLowerCase();
-      if (lowerMessage.includes('walk') || lowerMessage.includes('exercise')) {
-        response = botResponses.walk;
-      } else if (lowerMessage.includes('leash') || lowerMessage.includes('pull')) {
-        response = botResponses.leash;
-      } else if (lowerMessage.includes('treat') || lowerMessage.includes('food')) {
-        response = botResponses.treats;
-      } else if (lowerMessage.includes('bark') || lowerMessage.includes('noise')) {
-        response = botResponses.bark;
-      } else if (lowerMessage.includes('health') || lowerMessage.includes('sick')) {
-        response = botResponses.health;
-      } else if (lowerMessage.includes('potty') || lowerMessage.includes('toilet') || lowerMessage.includes('house')) {
-        response = botResponses.potty;
-      }
-
-      const botMessage: Message = {
-        id: messages.length + 1,
-        type: 'bot',
-        content: response,
-        timestamp: new Date(),
-        category: 'response'
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMessage: Message = {
-      id: messages.length + 1,
-      type: 'user',
-      content: inputMessage,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    simulateBotResponse(inputMessage);
-    setInputMessage('');
-  };
-
-  const handleQuickQuestion = (question: string) => {
-    const userMessage: Message = {
-      id: messages.length + 1,
-      type: 'user',
-      content: question,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    simulateBotResponse(question);
-  };
-
-  const getCategoryIcon = (category?: string) => {
-    switch (category) {
-      case 'exercise': return '🏃';
-      case 'training': return '🎓';
-      case 'nutrition': return '🍖';
-      case 'behavior': return '🐕';
-      case 'health': return '❤️';
-      default: return '💡';
+    if (!isPremium) {
+      // Show upgrade prompt for non-premium users
+      setMessages([...messages, 
+        {
+          id: messages.length + 1,
+          type: 'user' as const,
+          content: message,
+          timestamp: new Date()
+        },
+        {
+          id: messages.length + 2,
+          type: 'bot' as const,
+          content: "I'd love to help you with that! 🐾 For personalized AI coaching and unlimited questions, please upgrade to Premium. Free users get 3 questions per day.",
+          timestamp: new Date(),
+          isPremiumRequired: true
+        }
+      ]);
+    } else {
+      // Handle premium user message
+      setMessages([...messages, 
+        {
+          id: messages.length + 1,
+          type: 'user' as const,
+          content: message,
+          timestamp: new Date()
+        }
+      ]);
     }
+    
+    setMessage('');
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Bot className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">PawPal AI</h1>
+    <div className="min-h-screen bg-background flex flex-col pb-20">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 border-b border-border">
+        <div className="max-w-md mx-auto text-center">
+          <div className="flex items-center justify-center mb-2">
+            <Bot className="w-8 h-8 text-primary mr-2" />
+            <h1 className="text-xl font-bold text-foreground">AI Pet Coach</h1>
+            {!isPremium && <Crown className="w-4 h-4 text-primary ml-2" />}
           </div>
-          <p className="text-muted-foreground">Your intelligent dog care assistant</p>
+          <p className="text-sm text-muted-foreground">
+            {isPremium ? "Your personal AI trainer is ready!" : "Upgrade for unlimited AI coaching"}
+          </p>
         </div>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Chat Section */}
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary" />
-                  Chat with PawPal
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-[450px] p-4">
-                  <div className="space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.type === 'bot' && (
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-4 h-4 text-primary" />
-                          </div>
-                        )}
-                        
-                        <div
-                          className={`max-w-[80%] p-3 rounded-lg ${
-                            message.type === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                          <span className="text-xs opacity-70 mt-1 block">
-                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        
-                        {message.type === 'user' && (
-                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                            <User className="w-4 h-4" />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    
-                    {isTyping && (
-                      <div className="flex gap-3 justify-start">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="bg-muted p-3 rounded-lg">
-                          <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-md mx-auto p-4 space-y-4">
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] rounded-lg p-3 ${
+                msg.type === 'user' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : msg.isPremiumRequired
+                    ? 'bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20'
+                    : 'bg-muted'
+              }`}>
+                {msg.type === 'bot' && (
+                  <div className="flex items-center mb-1">
+                    <Bot className="w-4 h-4 mr-1 text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">AI Coach</span>
+                    {msg.isPremiumRequired && <Sparkles className="w-3 h-3 ml-1 text-primary" />}
                   </div>
-                </ScrollArea>
-                
-                {/* Input Section */}
-                <div className="p-4 border-t">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Ask me anything about your dog..."
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleSendMessage}
-                      disabled={!inputMessage.trim() || isTyping}
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                )}
+                <p className="text-sm">{msg.content}</p>
+                {msg.isPremiumRequired && (
+                  <Button size="sm" className="mt-2 w-full">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Upgrade to Premium
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Questions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5" />
-                  Quick Questions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {quickQuestions.map((question, index) => (
+          {/* Sample Questions */}
+          {messages.length === 1 && (
+            <div className="space-y-3 mt-6">
+              <h3 className="text-sm font-medium text-muted-foreground text-center">Try asking:</h3>
+              <div className="space-y-2">
+                {sampleQuestions.map((question, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start text-left h-auto p-3"
-                    onClick={() => handleQuickQuestion(question.text)}
+                    className="w-full text-left justify-start h-auto p-3 text-xs"
+                    onClick={() => setMessage(question)}
                   >
-                    <span className="mr-2">{getCategoryIcon(question.category)}</span>
-                    <span className="text-xs">{question.text}</span>
+                    <MessageCircle className="w-3 h-3 mr-2 flex-shrink-0" />
+                    {question}
                   </Button>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
-            {/* Features */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  What I Can Help With
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-red-500" />
-                    <span className="text-sm">Health & Wellness</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <HelpCircle className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm">Behavior Questions</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-yellow-500" />
-                    <span className="text-sm">Training Tips</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-primary" />
-                    <span className="text-sm">Personalized Advice</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Premium Features (for non-premium users) */}
+      {!isPremium && (
+        <div className="max-w-md mx-auto p-4">
+          <Card className="bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-center text-lg flex items-center justify-center">
+                <Crown className="w-5 h-5 mr-2 text-primary" />
+                Premium AI Features
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {premiumFeatures.map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={index} className="text-center p-3 rounded-lg bg-background/50">
+                      <Icon className="w-5 h-5 text-primary mx-auto mb-1" />
+                      <h4 className="text-xs font-semibold text-foreground">{feature.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground bg-background/50 rounded-lg p-2">
+                <Zap className="w-3 h-3 text-primary" />
+                <span>Unlimited questions • 24/7 availability • Advanced insights</span>
+              </div>
+              <Button className="w-full">
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade for $5/month
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-            {/* Disclaimer */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-xs text-muted-foreground">
-                  <strong>Disclaimer:</strong> PawPal provides general information and tips. 
-                  For medical emergencies or serious health concerns, always consult 
-                  with a licensed veterinarian.
-                </div>
-              </CardContent>
-            </Card>
+      {/* Input Area */}
+      <div className="bg-background border-t border-border p-4">
+        <div className="max-w-md mx-auto">
+          <div className="flex space-x-2">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={isPremium ? "Ask me anything about your pet..." : "Ask me about your pet (3 free questions)"}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              disabled={!isPremium && messages.filter(m => m.type === 'user').length >= 3}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleSend} 
+              disabled={!message.trim() || (!isPremium && messages.filter(m => m.type === 'user').length >= 3)}
+              size="icon"
+            >
+              {!isPremium && messages.filter(m => m.type === 'user').length >= 3 ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
           </div>
+          {!isPremium && (
+            <div className="flex items-center justify-center mt-2">
+              <Badge variant="secondary" className="text-xs">
+                {3 - messages.filter(m => m.type === 'user').length} free questions remaining
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
     </div>

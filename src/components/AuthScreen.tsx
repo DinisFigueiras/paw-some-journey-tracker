@@ -1,294 +1,150 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Heart, Users, MapPin, Trophy, Sparkles } from 'lucide-react';
 import pawgoMascot from '@/assets/pawgo-mascot.png';
 
-const signInSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+const AuthScreen = () => {
+  const { signIn, signUp, loading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-const signUpSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  username: z.string().min(2, 'Username must be at least 2 characters'),
-});
-
-type SignInForm = z.infer<typeof signInSchema>;
-type SignUpForm = z.infer<typeof signUpSchema>;
-
-export default function AuthScreen() {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
-  const { toast } = useToast();
-
-  const signInForm = useForm<SignInForm>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  const signUpForm = useForm<SignUpForm>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      username: '',
-    },
-  });
-
-  const onSignIn = async (data: SignInForm) => {
-    setLoading(true);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     try {
-      const { error } = await signIn(data.email, data.password);
-      if (error) {
-        toast({
-          title: 'Sign In Failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+      await signIn(email, password);
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
-  const onSignUp = async (data: SignUpForm) => {
-    setLoading(true);
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     try {
-      const { error } = await signUp(data.email, data.password, data.username);
-      if (error) {
-        toast({
-          title: 'Sign Up Failed',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Account Created!',
-          description: 'Please check your email to verify your account.',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'An unexpected error occurred',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+      await signUp(email, password, email.split('@')[0]); // Use email prefix as username
+    } catch (err: any) {
+      setError(err.message);
     }
   };
+
+  const features = [
+    { icon: Heart, title: "Health Tracking", desc: "Monitor your dog's wellness" },
+    { icon: MapPin, title: "GPS Walks", desc: "Track every adventure" },
+    { icon: Users, title: "Community", desc: "Connect with dog parents" },
+    { icon: Trophy, title: "Achievements", desc: "Celebrate milestones" }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <img src={pawgoMascot} alt="PawGo Mascot" className="w-24 h-24" />
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-primary/10 to-accent/10 flex flex-col">
+      {/* Hero Section */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+        <div className="text-center mb-8 max-w-md">
+          <div className="relative mb-6">
+            <img 
+              src={pawgoMascot} 
+              alt="PawGo Mascot" 
+              className="w-20 h-20 mx-auto mb-4 animate-bounce"
+            />
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-accent rounded-full flex items-center justify-center">
+              <Sparkles className="w-3 h-3 text-accent-foreground" />
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Welcome to PawGo
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Track your dog's life, every step of the way
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to PawGo</h1>
+          <p className="text-muted-foreground text-lg">Track your dog's life, every step of the way</p>
         </div>
 
-        <Card className="border-border/50 shadow-lg">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl">
-              {isSignUp ? 'Create Account' : 'Sign In'}
-            </CardTitle>
-            <CardDescription>
-              {isSignUp
-                ? 'Join the PawGo community today'
-                : 'Welcome back to PawGo'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isSignUp ? (
-              <Form {...signUpForm}>
-                <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
-                  <FormField
-                    control={signUpForm.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder="Enter your username"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={signUpForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={signUpForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="Enter your password"
-                              className="pl-10 pr-10"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Creating Account...' : 'Create Account'}
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              <Form {...signInForm}>
-                <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
-                  <FormField
-                    control={signInForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={signInForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="Enter your password"
-                              className="pl-10 pr-10"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'Signing In...' : 'Sign In'}
-                  </Button>
-                </form>
-              </Form>
-            )}
+        {/* Features Grid */}
+        <div className="grid grid-cols-2 gap-4 mb-8 max-w-md w-full">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <div key={index} className="bg-card/50 backdrop-blur-sm rounded-xl p-4 text-center border border-border/50">
+                <Icon className="w-6 h-6 text-primary mx-auto mb-2" />
+                <h3 className="font-semibold text-sm text-foreground">{feature.title}</h3>
+                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+              </div>
+            );
+          })}
+        </div>
 
-            <div className="text-center">
-              <Button
-                variant="ghost"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                {isSignUp
-                  ? 'Already have an account? Sign in'
-                  : "Don't have an account? Sign up"}
-              </Button>
-            </div>
+        {/* Auth Card */}
+        <Card className="w-full max-w-md border-border/50 shadow-xl bg-card/95 backdrop-blur-sm">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl text-foreground">Get Started</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-12"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12"
+                  />
+                  {error && <p className="text-destructive text-sm">{error}</p>}
+                  <Button type="submit" disabled={loading} className="w-full h-12 text-base">
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-12"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Create a password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="h-12"
+                  />
+                  {error && <p className="text-destructive text-sm">{error}</p>}
+                  <Button type="submit" disabled={loading} className="w-full h-12 text-base">
+                    {loading ? 'Creating account...' : 'Create Account'}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs text-muted-foreground max-w-md">
+          <p>By continuing, you agree to our Terms of Service and Privacy Policy</p>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default AuthScreen;
