@@ -29,7 +29,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import pawgoLogo from '@/assets/pawgo-logo.png';
+import pawgoLogo from '@/assets/pawgo-mascot.png';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
